@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>PRI model</title>
+		<style>
+		</style>
+	</head>
+	<body>
+
+		<!-- Import maps polyfill -->
+		<!-- Remove this when import maps will be widely supported -->
+		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+		 <!--
+		<script src="https://threejs.org/build/three.js"></script>
+		-->
+
+		<script type="importmap">
+		  {
+			"imports": {
+			  "three": "./three/build/three.module.js",
+			  "three/addons/": "./three/examples/jsm/"
+			}
+		  }
+		</script>
+		<script type="module">
+			
+			import * as THREE from 'three';
+
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+			
+			const scene = new THREE.Scene();
+			const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+
+			var controls = new OrbitControls( camera, renderer.domElement );
+			controls.listenToKeyEvents( window ); // optional
+
+			//controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+
+			controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+			controls.dampingFactor = 0.05;
+
+			controls.screenSpacePanning = false;
+
+			controls.minDistance = 1;
+			controls.maxDistance = 50;
+
+			controls.maxPolarAngle = Math.PI / 2;
+
+			document.body.appendChild( renderer.domElement );
+
+
+			const lights = [];
+			lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+			lights[ 1 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+			lights[ 2 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+
+			lights[ 0 ].position.set( 10, 120, -400 );
+			lights[ 1 ].position.set( 100, 200, 100 );
+			lights[ 2 ].position.set( - 80, - 100, - 80 );
+
+			scene.add( lights[ 0 ] );
+			scene.add( lights[ 1 ] );
+			scene.add( lights[ 2 ] );
+
+			const person = new THREE.Group();
+
+			//const geometry = new BufferGeometry();
+			//const lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
+			//group.add( new THREE.LineSegments( geometry, lineMaterial ) );
+
+
+			const PelvismeshMaterial = new THREE.MeshPhongMaterial( { color: 0x158289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+			const meshMaterial_2 = new THREE.MeshPhongMaterial( { color: 0x254219, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+
+			const LAICMaterial = new THREE.MeshPhongMaterial( { color: 0x554219, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+			const RTMCCMaterial = new THREE.MeshPhongMaterial( { color: 0x194199, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+			const RBCMaterial = new THREE.MeshPhongMaterial( { color: 0xF41911, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+
+			const meshJointMaterial = new THREE.MeshPhongMaterial( { color: 0x994219, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+			const joint_geometry = new THREE.SphereGeometry( 0.5, 16, 16 );
+			const joint_geometry2 = new THREE.SphereGeometry( 0.7, 16, 16 );
+
+			const pelvis_geometry = new THREE.BoxGeometry( 3, 1, 1 );
+			const pelvis = new THREE.Mesh( pelvis_geometry, PelvismeshMaterial );
+
+			//right Leg
+			const femur_geometry1 = new THREE.BoxGeometry( 1, 5, 1 );
+			const femur_geometry2 = new THREE.BoxGeometry( 1, 1, 1 );
+			const right_femur_p1 = new THREE.Mesh( femur_geometry1, LAICMaterial );
+			right_femur_p1.position.y = -5/2;
+			right_femur_p1.position.x = 1.5;
+			const right_femur_p2 = new THREE.Mesh( femur_geometry2, LAICMaterial );
+			const right_femur_upper_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			const right_femur_lower_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			right_femur_p2.position.x = 0.8;
+			right_femur_lower_joint.position.x = 1.5;
+			right_femur_lower_joint.position.y = -(5+0.2);
+			const right_femur = new THREE.Group();
+			right_femur.add(right_femur_p1)
+			right_femur.add(right_femur_p2)
+			right_femur.add(right_femur_upper_joint)
+			right_femur.add(right_femur_lower_joint)
+			right_femur.position.x = 3/2+0.2;
+
+			const right_tibia = new THREE.Mesh( femur_geometry1, LAICMaterial );
+			right_tibia.position.y = -(5/2+0.2);
+			
+			right_femur_lower_joint.add(right_tibia)
+
+			const right_tibia_lower_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			right_tibia_lower_joint.position.y = -(5/2+0.2);
+			right_tibia.add(right_tibia_lower_joint)
+
+			const foot_geometry1 = new THREE.BoxGeometry( 1, 0.5, 2 );
+			const right_foot = new THREE.Mesh( foot_geometry1, LAICMaterial );
+			right_foot.position.z = -0.5;
+			right_foot.position.y = -0.3;
+			right_tibia_lower_joint.add(right_foot)
+
+
+			//left Leg
+			const left_femur_p1 = new THREE.Mesh( femur_geometry1, LAICMaterial );
+			left_femur_p1.position.y = -5/2;
+			left_femur_p1.position.x = -1.5;
+			const left_femur_p2 = new THREE.Mesh( femur_geometry2, LAICMaterial );
+			const left_femur_upper_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			const left_femur_lower_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			left_femur_p2.position.x = -0.8;
+			left_femur_lower_joint.position.x = -1.5;
+			left_femur_lower_joint.position.y = -(5+0.2);
+			const left_femur = new THREE.Group();
+			left_femur.add(left_femur_p1)
+			left_femur.add(left_femur_p2)
+			left_femur.add(left_femur_upper_joint)
+			left_femur.add(left_femur_lower_joint)
+			left_femur.position.x = -(3/2+0.2);
+
+			const left_tibia = new THREE.Mesh( femur_geometry1, LAICMaterial );
+			left_tibia.position.y = -(5/2+0.2);
+			
+			left_femur_lower_joint.add(left_tibia)
+
+			const left_tibia_lower_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			left_tibia_lower_joint.position.y = -(5/2+0.2);
+			left_tibia.add(left_tibia_lower_joint)
+
+			const left_foot = new THREE.Mesh( foot_geometry1, LAICMaterial );
+			left_foot.position.z = -0.5;
+			left_foot.position.y = -0.3;
+			left_tibia_lower_joint.add(left_foot)
+
+
+
+			pelvis.add(right_femur);
+			pelvis.add(left_femur);
+
+			const spine_geometry = new THREE.BoxGeometry( 1, 3, 1 );
+			const spine_1 = new THREE.Mesh( spine_geometry, PelvismeshMaterial );
+			spine_1.position.y = 3/2;
+			const spine = new THREE.Group();
+			spine.position.z = 0.8;
+			spine.add(spine_1)
+
+			pelvis.add(spine);
+
+			const midback_joint = new THREE.Mesh( joint_geometry2, meshJointMaterial );
+			midback_joint.position.y = 3+0.2;
+			
+			spine.add(midback_joint);
+			const rib_geometry = new THREE.BoxGeometry( 4, 3, 1.8 );
+			const rib = new THREE.Mesh( rib_geometry, RBCMaterial );
+			rib.position.y = 3/2;
+			rib.position.z = -0.4;
+
+			midback_joint.add(rib);
+			const neck_joint = new THREE.Mesh( joint_geometry2, meshJointMaterial );
+			neck_joint.position.y = 3/2+0.2;
+			neck_joint.position.z = 0.4;
+			
+			rib.add(neck_joint);
+
+			const neck_geometry = new THREE.BoxGeometry( 1, 2, 1 );
+			const neck = new THREE.Mesh( neck_geometry, RTMCCMaterial );
+			neck.position.y = 2/2;
+
+			neck_joint.add(neck);
+
+			const head_geometry = new THREE.BoxGeometry( 1.8, 1.8, 1.8 );
+			const head = new THREE.Mesh( head_geometry, RTMCCMaterial );
+			head.position.y = 1.8;
+			head.position.z = -0.3;
+
+			neck.add(head);
+
+			//Right Arm
+			const scapula_geometry = new THREE.BoxGeometry( 2, 0.5, 1 );
+			const right_scapula = new THREE.Group();
+			const right_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
+			right_scapula_1.position.x = 1;
+
+			right_scapula.position.y = -0.5;
+			right_scapula.position.x = 0.5;
+			
+			right_scapula.add(right_scapula_1)
+
+			neck.add(right_scapula);
+
+			const right_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			right_shoulder_joint.position.x = 1.7;
+			
+			right_scapula.add(right_shoulder_joint);
+
+			const arm_geometry = new THREE.BoxGeometry( 0.5, 3, 1);
+			const right_arm = new THREE.Mesh( arm_geometry, RBCMaterial );
+			right_arm.position.y = -1.5;
+			right_arm.position.x = 0.5;
+
+			right_shoulder_joint.add(right_arm);
+
+			const right_elbow_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			right_elbow_joint.position.y = -1.6;
+			
+			right_arm.add(right_elbow_joint);
+
+			const right_lower_arm = new THREE.Mesh( arm_geometry, RBCMaterial );
+			right_lower_arm.position.y = -1.6;
+			right_elbow_joint.add(right_lower_arm);
+
+			//Left Arm
+			const left_scapula = new THREE.Group();
+			const left_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
+			left_scapula_1.position.x = -1;
+
+			left_scapula.position.y = -0.5;
+			left_scapula.position.x = -0.5;
+			
+			left_scapula.add(left_scapula_1)
+			neck.add(left_scapula);
+
+			const left_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			left_shoulder_joint.position.x = -1.7;
+			
+			left_scapula.add(left_shoulder_joint);
+
+			const left_arm = new THREE.Mesh( arm_geometry, RBCMaterial );
+			left_arm.position.y = -1.5;
+			left_arm.position.x = -0.5;
+
+			left_shoulder_joint.add(left_arm);
+
+			const left_elbow_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
+			left_elbow_joint.position.y = -1.6;
+			
+			left_arm.add(left_elbow_joint);
+
+			const left_lower_arm = new THREE.Mesh( arm_geometry, RBCMaterial );
+			left_lower_arm.position.y = -1.6;
+			left_elbow_joint.add(left_lower_arm);
+
+
+			person.add(pelvis);
+			scene.add( person );
+			
+			camera.position.z = 20;
+			camera.position.y = 15;
+			camera.position.x = 5;
+			camera.lookAt(0,0,0)
+
+
+			var controlled_val = {
+				'Degree': 0,
+				'APT_simulation':false
+			};
+			const panel = new GUI( { width: 310 } );
+			const sevFolder = panel.addFolder('Severity')
+			sevFolder.add(controlled_val, 'Degree', -0.3, 0.3)
+			sevFolder.add(controlled_val, 'APT_simulation', false, true)
+			
+
+
+			function animate() {
+				requestAnimationFrame( animate );
+	
+				var rot = controlled_val.Degree;
+
+				var back_rot = rot;
+				var LAIC = true;
+				if(rot < 0){
+					LAIC = false;
+					back_rot = -rot
+				}
+
+				left_femur.rotation.y = rot;
+				right_femur.rotation.y = rot;
+				
+				left_femur.rotation.x = (-rot/7);
+				right_femur.rotation.x = (rot/7);
+
+				var spine_rot_x = 0;
+				var pelv_rot_x = 0;
+				var pelv_rot_z = 0;
+				var fem_rot_x = 0;
+				var fem_rot_z = 0;
+				if(controlled_val.APT_simulation){
+					fem_rot_x = back_rot;
+					pelv_rot_x = -back_rot;
+					pelv_rot_z = -(rot/3);
+					//fem_rot_z = -rot/5.5;
+				}else{
+					spine_rot_x = -back_rot;
+				}
+				pelvis.rotation.x = pelv_rot_x;//Anterior pelvic tilt
+				spine.rotation.x = spine_rot_x;//Anterior pelvic tilt
+
+				pelvis.rotation.z = pelv_rot_z;//Anterior pelvic tilt compensation
+				left_femur.rotation.x += fem_rot_x;//Anterior pelvic tilt compensation
+				right_femur.rotation.x += fem_rot_x;//Anterior pelvic tilt compensation
+
+				//right_femur.rotation.z = fem_rot_z;//Anterior pelvic tilt compensation compensation
+				//left_femur.rotation.z = fem_rot_z;//Anterior pelvic tilt compensation compensation
+
+				left_tibia_lower_joint.rotation.x = rot/7;
+				right_tibia_lower_joint.rotation.x = -rot/7;
+				
+				pelvis.rotation.y = -rot;
+		
+
+				midback_joint.rotation.y = rot;
+				midback_joint.rotation.x = back_rot*2;//Anterior pelvic tilt compensation
+				midback_joint.rotation.z = -rot;
+
+				neck_joint.rotation.y = -rot;
+				neck_joint.rotation.x = -back_rot*2;//Forward head posture
+				neck_joint.rotation.z = rot;
+
+				head.rotation.y = rot/4;
+				head.rotation.x = back_rot*1.25;//Forward head posture compensation - keep head straight
+				head.rotation.z = -rot/4;
+
+				left_scapula.rotation.y = -back_rot/1;
+				left_scapula.rotation.x = back_rot/1;
+				if(LAIC){
+					left_scapula.rotation.z = -rot/1;
+				}else{
+					left_scapula.rotation.z = -rot/4;
+				}
+
+				right_scapula.rotation.y = back_rot/1;
+				right_scapula.rotation.x = back_rot/1;
+				if(LAIC){
+					right_scapula.rotation.z = -rot/4;
+				}else{
+					right_scapula.rotation.z = -rot/1;
+				}
+
+
+				renderer.render( scene, camera );
+			};
+
+			animate();
+		</script>
+	</body>
+</html>
+
