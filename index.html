@@ -198,17 +198,19 @@
 			neck.add(head);
 
 			//Right Arm
-			const scapula_geometry = new THREE.BoxGeometry( 2, 0.5, 1 );
+			const scapula_geometry = new THREE.BoxGeometry( 2, 1, 0.5 );
 			const right_scapula = new THREE.Group();
 			const right_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
 			right_scapula_1.position.x = 1;
 
-			right_scapula.position.y = -0.5;
-			right_scapula.position.x = 0.5;
+			var scap_offset = 0.9;
+			right_scapula.position.y = 1.3;
+			right_scapula.position.z = 1.3;
+			right_scapula.position.x = scap_offset;
 			
 			right_scapula.add(right_scapula_1)
 
-			neck.add(right_scapula);
+			rib.add(right_scapula);
 
 			const right_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			right_shoulder_joint.position.x = 1.7;
@@ -234,13 +236,17 @@
 			//Left Arm
 			const left_scapula = new THREE.Group();
 			const left_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
+			//left_scapula_1.rotation.y = -1;
 			left_scapula_1.position.x = -1;
 
-			left_scapula.position.y = -0.5;
-			left_scapula.position.x = -0.5;
+			left_scapula.position.y = 1.3;
+			left_scapula.position.z = 1.3;
+			left_scapula.position.x = -0.9;
+			//left_scapula.position.y = -0.5;
+			//left_scapula.position.x = -0.5;
 			
 			left_scapula.add(left_scapula_1)
-			neck.add(left_scapula);
+			rib.add(left_scapula);
 
 			const left_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			left_shoulder_joint.position.x = -1.7;
@@ -272,21 +278,21 @@
 			camera.lookAt(0,0,0)
 
 
+			var name = 'Right vs Left AIC';
 			var controlled_val = {
-				'Degree': 0,
 				'APT_simulation':false
 			};
+			controlled_val[name] = 0;
 			const panel = new GUI( { width: 310 } );
-			const sevFolder = panel.addFolder('Severity')
-			sevFolder.add(controlled_val, 'Degree', -0.3, 0.3)
-			sevFolder.add(controlled_val, 'APT_simulation', false, true)
+			panel.add(controlled_val, name, -100, 100)
+			panel.add(controlled_val, 'APT_simulation', false, true)
 			
 
 
 			function animate() {
 				requestAnimationFrame( animate );
 	
-				var rot = controlled_val.Degree;
+				var rot = (controlled_val[name]/100)*0.3;
 
 				var back_rot = rot;
 				var LAIC = true;
@@ -317,6 +323,8 @@
 				pelvis.rotation.x = pelv_rot_x;//Anterior pelvic tilt
 				spine.rotation.x = spine_rot_x;//Anterior pelvic tilt
 
+				spine.rotation.z = rot/2;//Right bc compensation
+
 				pelvis.rotation.z = pelv_rot_z;//Anterior pelvic tilt compensation
 				left_femur.rotation.x += fem_rot_x;//Anterior pelvic tilt compensation
 				right_femur.rotation.x += fem_rot_x;//Anterior pelvic tilt compensation
@@ -336,28 +344,31 @@
 
 				neck_joint.rotation.y = -rot;
 				neck_joint.rotation.x = -back_rot*2;//Forward head posture
-				neck_joint.rotation.z = rot;
 
 				head.rotation.y = rot/4;
 				head.rotation.x = back_rot*1.25;//Forward head posture compensation - keep head straight
-				head.rotation.z = -rot/4;
 
-				left_scapula.rotation.y = -back_rot/1;
-				left_scapula.rotation.x = back_rot/1;
+				//The scapular component of the Right BC pattern
+				//In LEFT AIC, One pushes out the right scapula to maintain arm positions  
+				var Left_scap_ofset = 0;
+				var Right_scap_ofset = 0;
 				if(LAIC){
-					left_scapula.rotation.z = -rot/1;
+					Right_scap_ofset = rot;
 				}else{
-					left_scapula.rotation.z = -rot/4;
+					Left_scap_ofset = -rot;
 				}
 
-				right_scapula.rotation.y = back_rot/1;
-				right_scapula.rotation.x = back_rot/1;
-				if(LAIC){
-					right_scapula.rotation.z = -rot/4;
-				}else{
-					right_scapula.rotation.z = -rot/1;
-				}
+				left_scapula.rotation.y = -0.6+Left_scap_ofset;
+				left_arm.rotation.y = 0.6-Left_scap_ofset;
+				left_arm.rotation.z = -Left_scap_ofset/2;
+				left_arm.rotation.x = -Left_scap_ofset/2;
+				left_scapula.position.x = -scap_offset - Left_scap_ofset;
 
+				right_scapula.rotation.y = 0.6-Right_scap_ofset;
+				right_arm.rotation.y = -0.6+Right_scap_ofset;
+				right_arm.rotation.z = Right_scap_ofset/2;
+				right_arm.rotation.x = -Right_scap_ofset/2;
+				right_scapula.position.x = scap_offset + Right_scap_ofset;
 
 				renderer.render( scene, camera );
 			};
