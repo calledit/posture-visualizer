@@ -2,8 +2,19 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>PRI model</title>
+		<title>Posture model - Right and Left stance</title>
 		<style>
+		#info {
+			position: absolute;
+			color:black;
+			background-color: rgba(255, 255, 255, 0.7);
+			font-family: Arial, Helvetica, sans-serif;
+			top: 20px;
+			left: 20px;
+			width: 350px;
+			z-index: 100;
+			display:block;
+		}
 		</style>
 	</head>
 	<body>
@@ -23,12 +34,18 @@
 			}
 		  }
 		</script>
+		<script>
+			var arrows = [];
+		</script>
 		<script type="module">
 			
 			import * as THREE from 'three';
 
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
+
+			var LAST_mode = 'not_set';
 			
 			const scene = new THREE.Scene();
 			const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -38,8 +55,6 @@
 
 			var controls = new OrbitControls( camera, renderer.domElement );
 			controls.listenToKeyEvents( window ); // optional
-
-			//controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
 
 			controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
 			controls.dampingFactor = 0.05;
@@ -68,10 +83,6 @@
 			scene.add( lights[ 2 ] );
 
 			const person = new THREE.Group();
-
-			//const geometry = new BufferGeometry();
-			//const lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
-			//group.add( new THREE.LineSegments( geometry, lineMaterial ) );
 
 
 			const PelvismeshMaterial = new THREE.MeshPhongMaterial( { color: 0x158289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
@@ -178,6 +189,12 @@
 			rib.position.z = -0.4;
 
 			midback_joint.add(rib);
+			const scapular_origin = new THREE.Group();
+			scapular_origin.position.y = 1.3;
+			scapular_origin.position.z = 1.3;
+			rib.add(scapular_origin);
+		
+			
 			const neck_joint = new THREE.Mesh( joint_geometry2, meshJointMaterial );
 			neck_joint.position.y = 3/2+0.2;
 			neck_joint.position.z = 0.4;
@@ -198,19 +215,19 @@
 			neck.add(head);
 
 			//Right Arm
+			var scap_offset = 0.9;
+			const right_scapular_origin = new THREE.Group();
+			right_scapular_origin.position.x = scap_offset;
+			scapular_origin.add(right_scapular_origin);
 			const scapula_geometry = new THREE.BoxGeometry( 2, 1, 0.5 );
 			const right_scapula = new THREE.Group();
 			const right_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
 			right_scapula_1.position.x = 1;
 
-			var scap_offset = 0.9;
-			right_scapula.position.y = 1.3;
-			right_scapula.position.z = 1.3;
-			right_scapula.position.x = scap_offset;
 			
 			right_scapula.add(right_scapula_1)
 
-			rib.add(right_scapula);
+			right_scapular_origin.add(right_scapula);
 
 			const right_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			right_shoulder_joint.position.x = 1.7;
@@ -234,19 +251,16 @@
 			right_elbow_joint.add(right_lower_arm);
 
 			//Left Arm
+			const left_scapular_origin = new THREE.Group();
+			left_scapular_origin.position.x = -scap_offset;
+			scapular_origin.add(left_scapular_origin);
 			const left_scapula = new THREE.Group();
 			const left_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
-			//left_scapula_1.rotation.y = -1;
 			left_scapula_1.position.x = -1;
 
-			left_scapula.position.y = 1.3;
-			left_scapula.position.z = 1.3;
-			left_scapula.position.x = -0.9;
-			//left_scapula.position.y = -0.5;
-			//left_scapula.position.x = -0.5;
 			
 			left_scapula.add(left_scapula_1)
-			rib.add(left_scapula);
+			left_scapular_origin.add(left_scapula);
 
 			const left_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			left_shoulder_joint.position.x = -1.7;
@@ -287,7 +301,7 @@
 			panel.add(controlled_val, name, -100, 100)
 			panel.add(controlled_val, 'APT_simulation', false, true)
 			
-
+			//var arrows = [];
 
 			function animate() {
 				requestAnimationFrame( animate );
@@ -299,6 +313,58 @@
 				if(rot < 0){
 					LAIC = false;
 					back_rot = -rot
+				}
+
+				if(LAST_mode != LAIC){
+
+					const hex = 0xffff00;
+
+					//Clear arrows
+					for(const x of arrows){
+						if(x){
+							if(x.parent){
+								x.parent.remove(x);
+							}
+							x.dispose();
+						}
+					}
+					arrows = [];
+					
+					var left_hipdir = new THREE.Vector3( 0, 0, -1 );
+					var right_hipdir = new THREE.Vector3( 0, 0, 1 );
+					if(!LAIC){
+						left_hipdir = new THREE.Vector3( 0, 0, 1 );
+						right_hipdir = new THREE.Vector3( 0, 0, -1 );
+
+						//Left scapular arrow
+						arrows[3] = new THREE.ArrowHelper( new THREE.Vector3( -1, 0, 0 ), new THREE.Vector3(0, 0, 0.4 ), 2, hex ,0.6, 0.6);
+						left_scapular_origin.add(arrows[3]);
+
+						//Ribs forward right side
+						arrows[4] = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, -1 ), new THREE.Vector3(1.9, -1.4, -1 ), 1.2, hex ,0.6, 0.6);
+						rib.add(arrows[4]);
+
+					}else{
+						//Right scapular arrow
+						arrows[3] = new THREE.ArrowHelper( new THREE.Vector3( 1, 0, 0 ), new THREE.Vector3(0, 0, 0.4 ), 2, hex ,0.6, 0.6);
+						right_scapular_origin.add(arrows[3]);
+
+						//Ribs forward left side
+						arrows[4] = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, -1 ), new THREE.Vector3(-1.9, -1.4, -1 ), 1.2, hex ,0.6, 0.6);
+						rib.add(arrows[4]);
+					}
+
+					//normalize the direction vector (convert to vector of length 1)
+					left_hipdir.normalize();
+					right_hipdir.normalize();
+
+
+					arrows[0] = new THREE.ArrowHelper( left_hipdir, new THREE.Vector3( 0.3, 0, 0 ), 2, hex ,0.6, 0.6);
+					left_femur_upper_joint.add(arrows[0]);
+					arrows[1] = new THREE.ArrowHelper( right_hipdir, new THREE.Vector3( -0.3, 0, 0 ), 2, hex ,0.6, 0.6);
+					right_femur_upper_joint.add(arrows[1]);
+					
+					LAST_mode = LAIC;
 				}
 
 				left_femur.rotation.y = rot;
@@ -316,7 +382,6 @@
 					fem_rot_x = back_rot;
 					pelv_rot_x = -back_rot;
 					pelv_rot_z = -(rot/3);
-					//fem_rot_z = -rot/5.5;
 				}else{
 					spine_rot_x = -back_rot;
 				}
@@ -329,8 +394,6 @@
 				left_femur.rotation.x += fem_rot_x;//Anterior pelvic tilt compensation
 				right_femur.rotation.x += fem_rot_x;//Anterior pelvic tilt compensation
 
-				//right_femur.rotation.z = fem_rot_z;//Anterior pelvic tilt compensation compensation
-				//left_femur.rotation.z = fem_rot_z;//Anterior pelvic tilt compensation compensation
 
 				left_tibia_lower_joint.rotation.x = rot/7;
 				right_tibia_lower_joint.rotation.x = -rot/7;
@@ -338,11 +401,12 @@
 				pelvis.rotation.y = -rot;
 		
 
-				midback_joint.rotation.y = rot;
+				midback_joint.rotation.y = -rot/2;
 				midback_joint.rotation.x = back_rot*2;//Anterior pelvic tilt compensation
 				midback_joint.rotation.z = -rot;
 
-				neck_joint.rotation.y = -rot;
+				neck_joint.rotation.y = -rot/2;
+				neck_joint.rotation.z = rot/1.5;
 				neck_joint.rotation.x = -back_rot*2;//Forward head posture
 
 				head.rotation.y = rot/4;
@@ -362,19 +426,24 @@
 				left_arm.rotation.y = 0.6-Left_scap_ofset;
 				left_arm.rotation.z = -Left_scap_ofset/2;
 				left_arm.rotation.x = -Left_scap_ofset/2;
-				left_scapula.position.x = -scap_offset - Left_scap_ofset;
+				left_scapular_origin.position.x = -scap_offset - Left_scap_ofset;
 
 				right_scapula.rotation.y = 0.6-Right_scap_ofset;
 				right_arm.rotation.y = -0.6+Right_scap_ofset;
 				right_arm.rotation.z = Right_scap_ofset/2;
 				right_arm.rotation.x = -Right_scap_ofset/2;
-				right_scapula.position.x = scap_offset + Right_scap_ofset;
+				right_scapular_origin.position.x = scap_offset + Right_scap_ofset;
 
 				renderer.render( scene, camera );
 			};
 
 			animate();
 		</script>
+		<div id="info">
+			<p><b>Visualizing Right and Left stance</b><br>
+				Use the control panel to the right to move the model in to a right or left stance. The movement of the model is exaggerated to make the pattern easier to grasp. Due to natural asymmetries like the liver being on one side. People tend to get stuck in the LEFT anterior inferor chain muscle pattern. 
+			</p>
+		</div>
 	</body>
 </html>
 
