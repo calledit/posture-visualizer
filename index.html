@@ -4,6 +4,9 @@
 		<meta charset="utf-8">
 		<title>Posture model - Right and Left stance</title>
 		<style>
+		body{
+			margin:0;
+		}
 		#info {
 			position: absolute;
 			color:black;
@@ -337,7 +340,7 @@
 						right_hipdir = new THREE.Vector3( 0, 0, -1 );
 
 						//Left scapular arrow
-						arrows[3] = new THREE.ArrowHelper( new THREE.Vector3( -1, 0, 0 ), new THREE.Vector3(0, 0, 0.4 ), 2, hex ,0.6, 0.6);
+						arrows[3] = new THREE.ArrowHelper( new THREE.Vector3( -1, 0, 0 ), new THREE.Vector3(0, 0.5, 0.4 ), 2, hex ,0.6, 0.6);
 						left_scapular_origin.add(arrows[3]);
 
 						//Ribs forward right side
@@ -346,7 +349,7 @@
 
 					}else{
 						//Right scapular arrow
-						arrows[3] = new THREE.ArrowHelper( new THREE.Vector3( 1, 0, 0 ), new THREE.Vector3(0, 0, 0.4 ), 2, hex ,0.6, 0.6);
+						arrows[3] = new THREE.ArrowHelper( new THREE.Vector3( 1, 0, 0 ), new THREE.Vector3(0, 0.5, 0.4 ), 2, hex ,0.6, 0.6);
 						right_scapular_origin.add(arrows[3]);
 
 						//Ribs forward left side
@@ -416,23 +419,37 @@
 				//In LEFT AIC, One pushes out the right scapula to maintain arm positions  
 				var Left_scap_ofset = 0;
 				var Right_scap_ofset = 0;
+				var right_arm_out = rot/2;
+				var left_arm_out = rot/2;
 				if(LAIC){
 					Right_scap_ofset = rot;
+					left_arm_out = rot;
 				}else{
 					Left_scap_ofset = -rot;
+					right_arm_out = rot;
 				}
 
 				left_scapula.rotation.y = -0.6+Left_scap_ofset;
-				left_arm.rotation.y = 0.6-Left_scap_ofset;
-				left_arm.rotation.z = -Left_scap_ofset/2;
-				left_arm.rotation.x = -Left_scap_ofset/2;
-				left_scapular_origin.position.x = -scap_offset - Left_scap_ofset;
+				left_shoulder_joint.rotation.y = 0.6-Left_scap_ofset;
+				left_shoulder_joint.rotation.z = left_arm_out;
+				left_shoulder_joint.rotation.x = -back_rot;
+				left_scapular_origin.position.x = -scap_offset - Left_scap_ofset*1.5;
 
 				right_scapula.rotation.y = 0.6-Right_scap_ofset;
-				right_arm.rotation.y = -0.6+Right_scap_ofset;
-				right_arm.rotation.z = Right_scap_ofset/2;
-				right_arm.rotation.x = -Right_scap_ofset/2;
-				right_scapular_origin.position.x = scap_offset + Right_scap_ofset;
+				right_shoulder_joint.rotation.y = -0.6+Right_scap_ofset;
+				right_shoulder_joint.rotation.z = right_arm_out;
+				right_shoulder_joint.rotation.x = -back_rot;
+				right_scapular_origin.position.x = scap_offset + Right_scap_ofset*1.5;
+
+				var right_tib_rot = 0;
+				var left_tib_rot = 0;
+				if(LAIC){
+					right_tib_rot = -rot;
+				}else{
+					left_tib_rot = -rot;
+				}
+				right_femur_lower_joint.rotation.y = right_tib_rot;
+				left_femur_lower_joint.rotation.y = left_tib_rot;
 
 				renderer.render( scene, camera );
 			};
@@ -441,7 +458,10 @@
 		</script>
 		<div id="info">
 			<p><b>Visualizing Right and Left stance</b><br>
-				Use the control panel to the right to move the model in to a right or left stance. The movement of the model is exaggerated to make the pattern easier to grasp. Due to natural asymmetries like the liver being on one side. People tend to get stuck in the LEFT anterior inferor chain muscle pattern. 
+				Use the control panel to the right to move the model in to a right or left stance.<br>
+				People tend to get stuck in the LEFT anterior inferor chain muscle pattern,
+				due to natural asymmetries like the liver being on one side, these asymmetries makes it easier to stand an a way that leads to the left AIC pattern.<br>
+				The movement of the model is exaggerated to make the pattern easier to grasp, and the model has been made with less parts and less details than the human body, to make the main points of left AIC, right BC pattern more comprehensible.
 			</p>
 		</div>
 	</body>
