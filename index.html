@@ -305,6 +305,10 @@
 			panel.add(controlled_val, 'APT_simulation', false, true)
 			
 			//var arrows = [];
+			
+			var elbow_bend = 0.1;
+			right_elbow_joint.rotation.x = elbow_bend;
+			left_elbow_joint.rotation.x = elbow_bend;
 
 			function animate() {
 				requestAnimationFrame( animate );
@@ -419,26 +423,32 @@
 				//In LEFT AIC, One pushes out the right scapula to maintain arm positions  
 				var Left_scap_ofset = 0;
 				var Right_scap_ofset = 0;
+				var Left_arm_internal_rot = 0;
+				var Right_arm_internal_rot = 0;
 				var right_arm_out = rot/2;
 				var left_arm_out = rot/2;
 				if(LAIC){
 					Right_scap_ofset = rot;
 					left_arm_out = rot;
+					Left_arm_internal_rot = -rot*0.5;
+					Right_arm_internal_rot = rot*1.5
 				}else{
 					Left_scap_ofset = -rot;
 					right_arm_out = rot;
+					Right_arm_internal_rot = -rot*0.5;
+					Left_arm_internal_rot = rot*1.5
 				}
 
 				left_scapula.rotation.y = -0.6+Left_scap_ofset;
-				left_shoulder_joint.rotation.y = 0.6-Left_scap_ofset;
+				left_shoulder_joint.rotation.y = 0.6-Left_scap_ofset+Left_arm_internal_rot;
 				left_shoulder_joint.rotation.z = left_arm_out;
-				left_shoulder_joint.rotation.x = -back_rot;
+				left_shoulder_joint.rotation.x = -back_rot-elbow_bend;
 				left_scapular_origin.position.x = -scap_offset - Left_scap_ofset*1.5;
 
 				right_scapula.rotation.y = 0.6-Right_scap_ofset;
-				right_shoulder_joint.rotation.y = -0.6+Right_scap_ofset;
+				right_shoulder_joint.rotation.y = -0.6+Right_scap_ofset+Right_arm_internal_rot;
 				right_shoulder_joint.rotation.z = right_arm_out;
-				right_shoulder_joint.rotation.x = -back_rot;
+				right_shoulder_joint.rotation.x = -back_rot-elbow_bend;
 				right_scapular_origin.position.x = scap_offset + Right_scap_ofset*1.5;
 
 				var right_tib_rot = 0;
