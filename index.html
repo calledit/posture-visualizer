@@ -351,6 +351,10 @@
 						arrows[4] = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, -1 ), new THREE.Vector3(1.9, -1.4, -1 ), 1.2, hex ,0.6, 0.6);
 						rib.add(arrows[4]);
 
+						//neck to the right
+						arrows[5] = new THREE.ArrowHelper( new THREE.Vector3( 1, -0.2, -0.5 ), new THREE.Vector3(0, -1, 0.7 ), 2.2, hex ,0.6, 0.6);
+						head.add(arrows[5]);
+
 					}else{
 						//Right scapular arrow
 						arrows[3] = new THREE.ArrowHelper( new THREE.Vector3( 1, 0, 0 ), new THREE.Vector3(0, 0.5, 0.4 ), 2, hex ,0.6, 0.6);
@@ -359,6 +363,10 @@
 						//Ribs forward left side
 						arrows[4] = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, -1 ), new THREE.Vector3(-1.9, -1.4, -1 ), 1.2, hex ,0.6, 0.6);
 						rib.add(arrows[4]);
+
+						//neck to the left
+						arrows[5] = new THREE.ArrowHelper( new THREE.Vector3( -1, -0.2, -0.5 ), new THREE.Vector3(0, -1, 0.7 ), 2.2, hex ,0.6, 0.6);
+						head.add(arrows[5]);
 					}
 
 					//normalize the direction vector (convert to vector of length 1)
