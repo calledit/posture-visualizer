@@ -41,7 +41,7 @@
 			var arrows = [];
 		</script>
 		<script type="module">
-			
+
 			import * as THREE from 'three';
 
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -49,7 +49,7 @@
 
 
 			var LAST_mode = 'not_set';
-			
+
 			const scene = new THREE.Scene();
 			const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
@@ -123,7 +123,7 @@
 
 			const right_tibia = new THREE.Mesh( femur_geometry1, LAICMaterial );
 			right_tibia.position.y = -(5/2+0.2);
-			
+
 			right_femur_lower_joint.add(right_tibia)
 
 			const right_tibia_lower_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
@@ -156,7 +156,7 @@
 
 			const left_tibia = new THREE.Mesh( femur_geometry1, LAICMaterial );
 			left_tibia.position.y = -(5/2+0.2);
-			
+
 			left_femur_lower_joint.add(left_tibia)
 
 			const left_tibia_lower_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
@@ -184,7 +184,7 @@
 
 			const midback_joint = new THREE.Mesh( joint_geometry2, meshJointMaterial );
 			midback_joint.position.y = 3+0.2;
-			
+
 			spine.add(midback_joint);
 			const rib_geometry = new THREE.BoxGeometry( 4, 3, 1.8 );
 			const rib = new THREE.Mesh( rib_geometry, RBCMaterial );
@@ -196,12 +196,12 @@
 			scapular_origin.position.y = 1.3;
 			scapular_origin.position.z = 1.3;
 			rib.add(scapular_origin);
-		
-			
+
+
 			const neck_joint = new THREE.Mesh( joint_geometry2, meshJointMaterial );
 			neck_joint.position.y = 3/2+0.2;
 			neck_joint.position.z = 0.4;
-			
+
 			rib.add(neck_joint);
 
 			const neck_geometry = new THREE.BoxGeometry( 1, 2, 1 );
@@ -227,14 +227,14 @@
 			const right_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
 			right_scapula_1.position.x = 1;
 
-			
+
 			right_scapula.add(right_scapula_1)
 
 			right_scapular_origin.add(right_scapula);
 
 			const right_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			right_shoulder_joint.position.x = 1.7;
-			
+
 			right_scapula.add(right_shoulder_joint);
 
 			const arm_geometry = new THREE.BoxGeometry( 0.5, 3, 1);
@@ -246,7 +246,7 @@
 
 			const right_elbow_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			right_elbow_joint.position.y = -1.6;
-			
+
 			right_arm.add(right_elbow_joint);
 
 			const right_lower_arm = new THREE.Mesh( arm_geometry, RBCMaterial );
@@ -261,13 +261,13 @@
 			const left_scapula_1 = new THREE.Mesh( scapula_geometry, RBCMaterial );
 			left_scapula_1.position.x = -1;
 
-			
+
 			left_scapula.add(left_scapula_1)
 			left_scapular_origin.add(left_scapula);
 
 			const left_shoulder_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			left_shoulder_joint.position.x = -1.7;
-			
+
 			left_scapula.add(left_shoulder_joint);
 
 			const left_arm = new THREE.Mesh( arm_geometry, RBCMaterial );
@@ -278,7 +278,7 @@
 
 			const left_elbow_joint = new THREE.Mesh( joint_geometry, meshJointMaterial );
 			left_elbow_joint.position.y = -1.6;
-			
+
 			left_arm.add(left_elbow_joint);
 
 			const left_lower_arm = new THREE.Mesh( arm_geometry, RBCMaterial );
@@ -288,32 +288,34 @@
 
 			person.add(pelvis);
 			scene.add( person );
-			
+
 			camera.position.z = 20;
 			camera.position.y = 15;
 			camera.position.x = 5;
 			camera.lookAt(0,0,0)
 
 
-			var name = 'Right vs Left AIC';
+			var name = 'Left vs Right AIC';
 			var controlled_val = {
-				'APT_simulation':false
+				'APT_simulation':false,
+				'Superior_T4_Syndrome':false
 			};
 			controlled_val[name] = 0;
 			const panel = new GUI( { width: 310 } );
 			panel.add(controlled_val, name, -100, 100)
 			panel.add(controlled_val, 'APT_simulation', false, true)
-			
+			panel.add(controlled_val, 'Superior_T4_Syndrome', false, true)
+
 			//var arrows = [];
-			
+
 			var elbow_bend = 0.1;
 			right_elbow_joint.rotation.x = elbow_bend;
 			left_elbow_joint.rotation.x = elbow_bend;
 
 			function animate() {
 				requestAnimationFrame( animate );
-	
-				var rot = (controlled_val[name]/100)*0.3;
+
+				var rot = (controlled_val[name]*-1/100)*0.3;
 
 				var back_rot = rot;
 				var LAIC = true;
@@ -336,7 +338,7 @@
 						}
 					}
 					arrows = [];
-					
+
 					var left_hipdir = new THREE.Vector3( 0, 0, -1 );
 					var right_hipdir = new THREE.Vector3( 0, 0, 1 );
 					if(!LAIC){
@@ -378,13 +380,13 @@
 					left_femur_upper_joint.add(arrows[0]);
 					arrows[1] = new THREE.ArrowHelper( right_hipdir, new THREE.Vector3( -0.3, 0, 0 ), 2, hex ,0.6, 0.6);
 					right_femur_upper_joint.add(arrows[1]);
-					
+
 					LAST_mode = LAIC;
 				}
 
 				left_femur.rotation.y = rot;
 				right_femur.rotation.y = rot;
-				
+
 				left_femur.rotation.x = (-rot/7);
 				right_femur.rotation.x = (rot/7);
 
@@ -412,9 +414,9 @@
 
 				left_tibia_lower_joint.rotation.x = rot/7;
 				right_tibia_lower_joint.rotation.x = -rot/7;
-				
+
 				pelvis.rotation.y = -rot;
-		
+
 
 				midback_joint.rotation.y = -rot/2;
 				midback_joint.rotation.x = back_rot*2;//Anterior pelvic tilt compensation
@@ -428,7 +430,7 @@
 				head.rotation.x = back_rot*1.25;//Forward head posture compensation - keep head straight
 
 				//The scapular component of the Right BC pattern
-				//In LEFT AIC, One pushes out the right scapula to maintain arm positions  
+				//In LEFT AIC, One pushes out the right scapula to maintain arm positions
 				var Left_scap_ofset = 0;
 				var Right_scap_ofset = 0;
 				var Left_arm_internal_rot = 0;
@@ -446,16 +448,31 @@
 					Right_arm_internal_rot = -rot*0.5;
 					Left_arm_internal_rot = rot*1.5
 				}
+				var scapular_lift_rot = 0;
+				var right_elbow_bend = 0;
+				var left_elbow_bend = 0;
+				if(controlled_val.Superior_T4_Syndrome){
+					scapular_lift_rot = rot;
+					if(LAIC){
+						right_elbow_bend = rot;
+					}else{
+						left_elbow_bend = -rot;
+					}
+				}
 
+				left_elbow_joint.rotation.x = elbow_bend+left_elbow_bend;
 				left_scapula.rotation.y = -0.6+Left_scap_ofset;
+				left_scapula.rotation.z = scapular_lift_rot;
 				left_shoulder_joint.rotation.y = 0.6-Left_scap_ofset+Left_arm_internal_rot;
-				left_shoulder_joint.rotation.z = left_arm_out;
+				left_shoulder_joint.rotation.z = left_arm_out-scapular_lift_rot;
 				left_shoulder_joint.rotation.x = -back_rot-elbow_bend;
 				left_scapular_origin.position.x = -scap_offset - Left_scap_ofset*1.5;
 
+				right_elbow_joint.rotation.x = elbow_bend+right_elbow_bend;
 				right_scapula.rotation.y = 0.6-Right_scap_ofset;
+				right_scapula.rotation.z = scapular_lift_rot;
 				right_shoulder_joint.rotation.y = -0.6+Right_scap_ofset+Right_arm_internal_rot;
-				right_shoulder_joint.rotation.z = right_arm_out;
+				right_shoulder_joint.rotation.z = right_arm_out-scapular_lift_rot;
 				right_shoulder_joint.rotation.x = -back_rot-elbow_bend;
 				right_scapular_origin.position.x = scap_offset + Right_scap_ofset*1.5;
 
@@ -484,4 +501,3 @@
 		</div>
 	</body>
 </html>
-
